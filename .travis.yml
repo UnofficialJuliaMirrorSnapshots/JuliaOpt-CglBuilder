@@ -1,0 +1,40 @@
+language: julia
+os:
+  - linux
+julia:
+  - 0.7
+notifications:
+  email: false
+git:
+  depth: 99999999
+cache:
+  timeout: 1000
+  directories:
+    - downloads
+env:
+  global:
+    - BINARYBUILDER_DOWNLOADS_CACHE=downloads
+    - BINARYBUILDER_AUTOMATIC_APPLE=true
+sudo: required
+
+# Before anything else, get the latest versions of things
+before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaPackaging/BinaryProvider.jl"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaPackaging/BinaryBuilder.jl")); Pkg.build()'
+
+
+script:
+  - julia build_tarballs.jl
+
+deploy:
+    provider: releases
+    api_key:
+        # Note; this api_key is only valid for JuliaOpt/CglBuilder; you need
+        # to make your own: https://docs.travis-ci.com/user/deployment/releases/
+        secure: qmWxjpHF4zjEZDXpsAkV3TlTzkhvHlINEZ6VuUsLTEQlkhOe421/yTBDfKNuH3fWAlygTVY2RsvCoh86ZjGgDLRAyOgCM06mbgjaWI7cZZ5yEmOoL0L41MAm1I0Rg6kp4GF1+AuLa7AJEC9qQEKHNjFCMx5RIBpuWcUNEQHYBzVAd2DM7jqCHCgxn3YF/v1BNZyTohjSKSSEn4V0ENo/xnTDmJsehTzL550TWPvEqsflVMS9j6ghM4zDvKlMw1NJX9AKvUuNdWYqW2tLHQIRdF0J3DU3i6ZzzAiDUFxfMOYGyrUEANELX0AkuGSZPXv6u/t1VxuRMjYBzGBS1I/ba7+IDTWQSmkuk5PD3zEIeYsaYzysy5W7DwNtujna0fRoRWT55aEbqmnM6H3zWd9Xr+lN22BNMAKNknCVCYvDl417gVZlsT8qpJ7YJfH/Dq3mxxTumJXiDmogGp0s7DEM7S27Lkkk4SXeuvf3Na/Jdrp2J0JQEHKD8UG71lMW14S/pAQmttE9yClrcWWTN6eV6Yr5URHNYKzT6HydqvBli4AW6khTtuqaRa7+rOaMZ0OPoSnYCJQC9kXBAigDbyXGoJAb5ItCaFL2fXNSZQx/B34Do4l2QAjULVrUHl55DglJxkZJZ6QO8rxdnvs5/8P/hc9omNGcuC8SOLXYlQsj4yc=
+    file_glob: true
+    file: products/*
+    skip_cleanup: true
+    on:
+        repo: JuliaOpt/CglBuilder
+        tags: true
